@@ -75,7 +75,7 @@ Infant_Mortal_cols <- col(Infant_Mortal)
 
 ```{r Q7a}
 stroop1 <- read.csv("../data/stroop.csv")
-stroop2 <- read.csv("data/stroop.xlsx")
+stroop2 <- read.("data/stroop.xlsx")
 ```
 
 使用`glimpse()`預覽匯入`stroop1`與`stroop2`的資料內容，在以下指示欄位裡寫出你觀察到的差異。
@@ -182,7 +182,7 @@ R內存函式`colors()`可輸出繪圖函式能展現的色彩代號，請列出
 
 
 ```{r Q15}
-col_skyblue <- NULL
+col_skyblue <- 
 col_skyblue_length <- NULL
 ```
 
@@ -210,9 +210,10 @@ plot(x,y)
 製造向量物件`t`包含0到1000之間相隔0.5的所有數值。再製造向量物件`x`是`t`的餘弦函數值(cos)，向量物件`y`是`t`的正弦函數值(sin)。繪圖呈現`x`與`y`之間的關係。
 
 ```{r Q18}
-t <- NULL
-x <- NULL
-y <- NULL
+t <- seq(0,1000,by = 0.5)
+x <- cos(t)
+y <- sin(t)
+plot(x,y)
 ```
 
 
