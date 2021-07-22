@@ -76,7 +76,13 @@ my_name <- paste("林",",","子渝")
 
 ```{r Q6}
 # 下一行安裝程式碼不執行
-123123123
+knitr::opts_chunk$set(echo = TRUE) ## 文件內所有chunk的預設模式:顯示程式碼與執行結果
+if(!require(fortunes)){  ## 如果套件未安裝，先執行安裝再載入
+  install.packages("fortunes")  ## 執行前安裝套件
+  library(fortunes)             ## 載入套件
+} else {  ## 如果套件已經安裝，直接執行載入
+  library(fortunes)             ## 載入套件
+}
 ```
 
 
@@ -84,6 +90,7 @@ my_name <- paste("林",",","子渝")
 
 ```{r Q7}
 fortune()
+
 ```
 
 
