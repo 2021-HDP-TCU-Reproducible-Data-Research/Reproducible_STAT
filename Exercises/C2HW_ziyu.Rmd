@@ -27,7 +27,7 @@ library(readxl)
 
 ```{r Q1}
 # put code here
-
+data(package = "datasets")
 ```
 
 
@@ -35,14 +35,14 @@ library(readxl)
 
 ```{r Q2}
 # put code here
-# 
+data(ToothGrowth)
 ```
 
 
 以一行程式碼將 `ToothGrowth` 資料集轉換為tibble格式，並存入物件`TG`.
 
 ```{r Q3}
-TG <- NULL
+TG <- as_tibble(ToothGrowth)
 ```
 
 
@@ -58,15 +58,15 @@ Infant_Mortal <- read.csv("../data/infmort.csv")
 再一次使用`readr::read_csv()`匯入"infmort.csv"，這次嘗試匯入時不要匯入`Year`欄位的資料。
 
 ```{r Q5}
-Infant_Mortal_skip <- read.csv("../data/infmort.csv",)
+Infant_Mortal_skip <- "不會"
 ```
 
 
 計算第一次匯入`Infant_Mortal`的資料有多少列(row)與欄(col)？計算結果存入程式區塊的物件。
 
 ```{r Q6}
-Infant_Mortal_rows <- row(Infant_Mortal) 
-Infant_Mortal_cols <- col(Infant_Mortal)
+Infant_Mortal_rows <- nrow(Infant_Mortal) 
+Infant_Mortal_cols <- ncol(Infant_Mortal)
 ```
 
 ## 由外部Excel檔案匯入資料
@@ -75,23 +75,24 @@ Infant_Mortal_cols <- col(Infant_Mortal)
 
 ```{r Q7a}
 stroop1 <- read.csv("../data/stroop.csv")
-stroop2 <- read.("data/stroop.xlsx")
+library(readxl)
+stroop2 <- read_excel("../data/stroop.xlsx")
 ```
 
 使用`glimpse()`預覽匯入`stroop1`與`stroop2`的資料內容，在以下指示欄位裡寫出你觀察到的差異。
 
 ```{r Q7b}
 # 預覽資料內容
-
+glimpse(stroop1)
+glimpse(stroop2)
 ```
 
-> （在這裡寫出你的觀察）
+> 在反應時間rt的數值上不同，csv資料有4捨5入，excel沒有。
 
 根據觀察更改匯入"data/stroop.xlsx"的函式參數，以一行程式碼匯入`stroop2b`，再預覽資料內容，確認每一個欄位的資料型態都與`stroop1`一致。
 
 ```{r Q8, message=FALSE, warning=FALSE}
-stroop2b <- read_xlsx("../data/stroop.xlsx", ...)
-glimpse(stroop2b)
+stroop2b <- "不會"
 ```
 
 
@@ -100,7 +101,12 @@ glimpse(stroop2b)
 自建一個tibble表單，舉出你認識的兩位同學姓名、年齡與參加的社團，分別存入`name`, `age`,  `group`等三個欄位。
 
 ```{r Q9}
-people <- NULL
+people <- 
+  tibble(
+    names = c("王小明", "陳大華"),
+    age = c("12", "10"),
+    group = c("桌球社", "藍球社")
+)
 ```
 
 比照以下的表格範例，在下方程式碼區塊使用最多四行程式碼，製造出內容一致的tibble表單。這個題目可以演練`rep()`的使用技巧。
@@ -117,7 +123,11 @@ ID |  A | B   | C
 8	| A1	| B1	| C4
 
 ```{r Q10}
-my_tbl <- NULL  
+my_tbl <- tibble(
+  A = rep(c("A2","A1"),each = 4,len = 8),
+  B = rep(c("B2","B1"),each = 1,len = 8),
+  C = rep(c("C3","C4"),each = 4,len = 8)
+)
 ```
 
 ## 資料型態的運用方法
@@ -129,19 +139,19 @@ my_tbl <- NULL
 * `two_chr` 文字(character)
 
 ```{r Q11}
-two_int <- NULL
-two_dbl <- NULL
-two_chr <- NULL
+two_int <- 1L
+two_dbl <- 1.0
+two_chr <- "1"
 ```
 
 
 程式碼區塊裡的物件`F_log`, `F_chr`, `F_int`, `F_dbl`預定填入邏輯值(logical)，文字，整數，浮點數。請分別填入等於`FALSE`的資料。
 
 ```{r Q12}
-F_log <- NULL
-F_chr <- NULL
-F_int <- NULL
-F_dbl <- NULL
+F_log <- FALSE
+F_chr <- "FALSE"
+F_int <- 1L
+F_dbl <- 1.0
 ```
 
 檢查填入的內容是否正確：
@@ -173,8 +183,7 @@ threes <- c(2,4,8)
 R內存環境有既存向量`letters`包括26個英文字母，參考第2單元裡的範例，在以下程式碼區塊拼出'dog'。
 
 ```{r Q14}
-dog <- c(letters)
-         dog[c(4,15,7)]
+dog <- letters[c(4,15,7)]
 ```
 
 
@@ -182,8 +191,8 @@ R內存函式`colors()`可輸出繪圖函式能展現的色彩代號，請列出
 
 
 ```{r Q15}
-col_skyblue <- 
-col_skyblue_length <- NULL
+col_skyblue <- colors()[grep("skyblue",colors())]
+col_skyblue_length <- length(col_skyblue)
 ```
 
 
@@ -191,8 +200,13 @@ col_skyblue_length <- NULL
 製造一個自訂資料表格物件`table1`，其中至少有四個變數欄位，第2單元提到的資料型態(邏輯值，文字，整數，浮點數)都要出現。再將每個欄位的資料型態，存入列表物件`col_types`。
 
 ```{r Q16}
-table1 <- NULL
-col_types <- NULL
+table1 <-   tibble(
+    名字 = c("王小明", "陳大華"),
+    年齡 = c(12L, 10L),
+    視力 = c(1.2, 1.1),
+    女性 = rep(FALSE)
+)
+col_types <- glimpse(table1)
 ```
 
 
@@ -230,12 +244,12 @@ R內建機率分佈函數 `runif(n, min, max)`，其中的參數`n`決定產生�
 set.seed(8675309) # ensures you get the same random numbers each time you run this code chunk
 
 pvals    <- runif(10000)
-is_sig   <- NULL
-sig_vals <- NULL
-prop_sig <- NULL
+is_sig   <- pvals < 0.1
+sig_vals <- pvals[is_sig]
+prop_sig <- length(sig_vals) / length(pvals)
 hist(pvals,main="10000次無效結果的p值分佈", xlab="p值", ylab = "結果次數總計")
 ```
 
-> (在此說明prop_sig與.01的關係)
+> 呃...看不出來，好像做錯了。
 
 **完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**
