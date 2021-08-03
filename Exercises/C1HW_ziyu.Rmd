@@ -65,7 +65,7 @@ bins20 <- seq(from=0,to=100,by=100/20)
 使用函式`paste()`在你的"姓"與"名"中間置入逗號(",")，輸出的字串存入物件`my_name`。
 
 ```{r Q5}
-my_name <- paste("林",",","子渝")
+my_name <- paste(c("林","子渝"),collapse =',')
 ```
 
 
