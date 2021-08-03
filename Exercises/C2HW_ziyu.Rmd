@@ -58,7 +58,7 @@ Infant_Mortal <- read.csv("../data/infmort.csv")
 再一次使用`readr::read_csv()`匯入"infmort.csv"，這次嘗試匯入時不要匯入`Year`欄位的資料。
 
 ```{r Q5}
-Infant_Mortal_skip <- "不會"
+Infant_Mortal_skip <- read.csv("../data/infmort.csv",)%>%select(-Year)
 ```
 
 
