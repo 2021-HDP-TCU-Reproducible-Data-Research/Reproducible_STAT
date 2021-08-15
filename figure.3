@@ -1,0 +1,204 @@
+
+前面是老師提供的
+```{r}
+NC_data <- data_numeric %>% 
+  ## 保留2500秒內完成而且通過檢測題的參與者
+  filter( as.numeric(Duration..in.seconds.) <= 2500 & Q1_CATCH1 == 5) %>%
+  ## 挑出ID及NC資料
+  select("ID", starts_with("Q16_"))
+```
+
+```{r}
+NCC_data <- data_numeric %>% 
+  ## 保留2500秒內完成而且通過檢測題的參與者
+  filter( as.numeric(Duration..in.seconds.) <= 2500 & Q1_CATCH1 == 5) %>%
+  ## 挑出ID及NC資料
+  select("ID", starts_with("Q17_"))
+```
+```{r}
+## 挑出非反向計分題
+NCC_data_reversed <- NCC_data %>% select(!ends_with("R")) %>%
+## 挑出反向計分題
+## 重置計分
+## 重新組合資料框架
+bind_cols(7 - NCC_data %>% 
+  select(ends_with("R")))
+```
+
+```{r}
+## 測謊題欄數
+lie_pos <- names(NCC_data_reversed)[grep(names(NCC_data_reversed),pattern = "LIE")]
+## NCC題欄數
+ncc_pos <- names(NCC_data_reversed)[-grep(names(NCC_data_reversed),pattern = "LIE")][-1]
+## Order questions
+o_pos <- paste0("Q17_",c("1", "6", "11", "20R", "24", "28R", "34", "35", "37", "47R"))
+## Predictability questions
+p_pos <- paste0("Q17_",c("5R", "7R", "8", "19R", "26", "27", "30", "45"))
+## Decisiveness questions
+d_pos <- paste0("Q17_",c("12R", "13R", "14", "16R", "17", "23R", "40R"))
+## Ambiguity questions
+a_pos <- paste0("Q17_",c("3", "9", "15", "21", "31", "32", "33", "38", "42"))
+## Closed Mindedness
+c_pos <-  paste0("Q17_",c("2R", "4", "10", "25R", "29R", "36R", "41R", "44"))
+
+## NCC總分小計
+NCC_scores <- NCC_data_reversed %>%
+  mutate(o_score = rowSums(.[o_pos]),
+         p_score = rowSums(.[p_pos]),
+         d_score = rowSums(.[d_pos]),
+         a_score = rowSums(.[a_pos]),
+         c_score = rowSums(.[c_pos])) %>%
+  transmute(ID=ID,lie_score = rowSums(.[lie_pos]), 
+            o_score = o_score,
+            p_score = p_score,
+            d_score = d_score,
+            a_score = a_score,
+            c_score = c_score,
+            ncc_score = rowSums(.[ncc_pos]))
+
+(NCC_scores <- NCC_scores %>% 
+## 計算NCC 25% & 75%四位分數
+## NCC High > 75%; NCC Low < 25%
+  mutate(NCC_GROUP = if_else(ncc_score >= quantile(ncc_score,c(.75)), "H",
+                      (if_else(ncc_score <= quantile(ncc_score,c(.25)),"L","N"))                      )
+         )) %>%
+  group_by(NCC_GROUP) %>%
+  summarise(N = n(), Average = mean(ncc_score))
+
+```
+
+```{r}
+## 挑出非反向計分題
+NC_data_reversed <- NC_data %>% select(!ends_with("R")) %>%
+## 挑出反向計分題
+## 重置計分
+## 重新組合資料框架
+bind_cols(6 - NC_data %>% 
+  select(ends_with("R")))
+```
+
+```{r}
+## NC總分小計
+(NC_scores <- NC_data_reversed %>%
+  transmute(ID=ID,nc_score = rowSums(.[-1])) %>%
+   mutate(NC_GROUP = if_else(nc_score > quantile(nc_score,c(.5)), "H", "L")))%>%
+#                      if_else(nc_score <= quantile(nc_score,c(.25)),"L","N") ))) %>%
+  group_by(NC_GROUP) %>%
+  summarise(N=n(), Average = mean(nc_score))
+```
+
+```{R}
+Scale <- c("Need for Cognition","Need for Cognitive Closure")
+
+bind_cols(Scale,
+bind_rows(
+NC_scores %>% 
+  summarise(N = n(), Mean = mean(nc_score), SD = sd(nc_score), Median=median(nc_score), Min = min(nc_score), Max = max(nc_score), CI_L = Mean + qnorm(.025)*SD/sqrt(n()), CI_H = Mean + qnorm(.975)*SD/sqrt(n()) ),
+NCC_scores %>% 
+  summarise(N = n(), Mean = mean(ncc_score), SD = sd(ncc_score), Median=median(ncc_score), Min = min(ncc_score), Max = max(ncc_score), CI_L = Mean + qnorm(.025)*SD/sqrt(n()), CI_H = Mean + qnorm(.975)*SD/sqrt(n()) )
+ )
+)
+```
+```{r}
+NC_scores %>% left_join(NCC_scores, by = "ID") %>% 
+  filter(NC_GROUP != "N", NCC_GROUP != "N") %>%
+  group_by(NC_GROUP, NCC_GROUP) %>%
+  summarise(N = n())
+```
+
+```{r}
+## check the equality of two data sets
+sum(data_factors$Q1T_Page.Submit != data_numeric$Q1T_Page.Submit)
+## Boxplot for test duration
+boxplot(data_numeric$Q1T_Page.Submit)
+wave1_rawdata <- data_numeric %>% 
+## exclude the participants who spent more than 999 seconds on the knowledge test
+  filter(Q1T_Page.Submit < 999) %>%
+## exclude the participants who failed the catch question
+  filter(Q1_CATCH1 == 5) %>%
+## ## exclude the participants who spent time on the knowledge test longer than 3.29 standardized time
+  filter(scale(Q1T_Page.Submit)<3.29)
+## How many participants' data are analyzed?
+wave1_rawdata %>%
+  summarise(N=n())
+```
+
+以下開始是我的測試
+
+```{r}
+data_numeric %>% select(starts_with("Q12")) %>%
+  rmarkdown::paged_table(options = list(rows.print = 20))
+```
+
+```{r}
+Search_Frequency <-wave1_rawdata %>%
+  select(ID,Q12) 
+```
+
+```{r}
+Group <- NC_scores %>% left_join(NCC_scores, by = "ID") %>% 
+  filter(NC_GROUP != "N", NCC_GROUP != "N") %>%
+  group_by(NC_GROUP, NCC_GROUP) %>%
+  summarise(N = n())
+
+```
+```{r}
+
+F3_1 <- data_numeric %>% 
+  ## 保留2500秒內完成而且通過檢測題的參與者
+  filter( as.numeric(Duration..in.seconds.) <= 2500 & Q1_CATCH1 == 5) %>%
+  ## 挑出ID及NC資料
+  select("ID", starts_with("Q12"))
+  
+
+```
+
+```{r}
+F3_2 <- NC_scores %>% left_join(NCC_scores, by = "ID") %>% left_join(F3_1, by = "ID")%>% 
+  filter(NC_GROUP != "N", NCC_GROUP != "N")
+  
+```
+
+```{r}
+F3_3 <- unite(
+  data = F3_2, 
+  col = "Group", 
+  NC_GROUP, NCC_GROUP,  
+  sep = ","        
+) %>% 
+  
+  glimpse()
+```
+```{r}
+F3_4 <- data_factors %>% 
+  ## 保留2500秒內完成而且通過檢測題的參與者
+  filter( as.numeric(Duration..in.seconds.) <= 2500 & Q1_CATCH1 == 5) %>%
+  
+  select("Q12")
+```
+```{r}
+#此為製圖，但是並不完全
+#只有格式相同，橫軸名稱要更改縱軸應是百分比
+F3_5 <- ggplot(F3_3, aes(Q12, fill=Group)) +
+  geom_histogram(binwidth = 1, alpha = 0.5, 
+                 position = "dodge")
+```
+```{r}
+F3_6 <- NC_scores %>% left_join(NCC_scores, by = "ID") %>% 
+  left_join(F3_1, by = "ID")%>% 
+  filter(NC_GROUP != "N", NCC_GROUP != "N")%>%
+  group_by(NC_GROUP, NCC_GROUP, Q12) %>%
+  summarise(N = n())
+```
+
+```{r}
+F3_7 <- unite(
+  data = F3_6, 
+  col = "Group", 
+  NC_GROUP, NCC_GROUP,  
+  sep = ","        
+) %>% 
+  
+  glimpse()
+```
+
