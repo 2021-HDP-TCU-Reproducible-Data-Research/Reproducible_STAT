@@ -84,12 +84,15 @@ study2_by_sex <- study2 %>%
     
 ```{r ex-2-a}
 Y <- study2 %>%
-    group_by(year(date)) %>%
-    rename("year" = "year(date)") %>%
-    summarise(n = n())
+  group_by(year(date))%>%
+  rename(year = "year(date)")%>%
+  summarise(n = n())
 
-ggplot(Y, aes(year)) +
-  geom_bar() 
+ggplot(Y,aes(year, n), colour = year) +
+  stat_summary(geom = "col", alpha = 1) + 
+  stat_summary(geom = "errorbar",width = 0,width = 0.25) +
+  coord_cartesian()
+
 ```
 
 
