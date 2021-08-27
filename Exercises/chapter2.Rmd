@@ -1,20 +1,21 @@
 ---
 title: '練習02: 可重製科學的資料科學基本功'
-author: "作業作者姓名"
+author: "謝明翰"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
 # please do not alter this code chunk
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = TRUE)
 library(tidyverse)
-library(readxl)
+devtools::install_github("psyteachr/msc-data-skills")
+
 # install the class package dataskills to access built-in data
 # devtools::install_github("psyteachr/msc-data-skills)
 # or download data from the website
 # https://psyteachr.github.io/msc-data-skills/data/data.zip
 ```
-
 > 原作者: 格拉斯哥大學心理學系PsyTeachR團隊  
 > 翻譯改編:慈濟大學陳紹慶
 
@@ -27,7 +28,7 @@ library(readxl)
 
 ```{r Q1}
 # put code here
-
+data(package = "datasets")
 ```
 
 
@@ -35,14 +36,14 @@ library(readxl)
 
 ```{r Q2}
 # put code here
-# 
+data("ToothGrowth")
 ```
 
 
 以一行程式碼將 `ToothGrowth` 資料集轉換為tibble格式，並存入物件`TG`.
 
 ```{r Q3}
-TG <- NULL
+TG <- tibble(ToothGrowth)
 ```
 
 
@@ -52,21 +53,26 @@ TG <- NULL
 
 
 ```{r Q4}
-Infant_Mortal <- read_csv("../data/")
+Infant_Mortal <- readr::read_csv("../data/infmort.csv")
 ```
 
 再一次使用`readr::read_csv()`匯入"infmort.csv"，這次嘗試匯入時不要匯入`Year`欄位的資料。
 
 ```{r Q5}
-Infant_Mortal_skip <- NULL
+# set object IMskip
+IM_skip <- cols(
+  Year = col_skip()
+) 
+
+Infant_Mortal_skip <- readr::read_csv("../data/infmort.csv",col_types = IM_skip)
 ```
 
 
 計算第一次匯入`Infant_Mortal`的資料有多少列(row)與欄(col)？計算結果存入程式區塊的物件。
 
 ```{r Q6}
-Infant_Mortal_rows <- NULL
-Infant_Mortal_cols <- NULL
+Infant_Mortal_rows <- nrow(Infant_Mortal)
+Infant_Mortal_cols <- ncol(Infant_Mortal)
 ```
 
 ## 由外部Excel檔案匯入資料
@@ -74,24 +80,46 @@ Infant_Mortal_cols <- NULL
 使用第2單元建議的函式，分別以一行程式碼匯入"data/stroop.csv"並存入`stroop1`，以及匯入"data/stroop.xlsx"並存入`stroop2`。
 
 ```{r Q7a}
-stroop1 <- NULL
-stroop2 <- NULL
+stroop1 <- readr::read_csv("../data/stroop.csv")
+stroop2 <- readxl::read_xlsx("../data/stroop.xlsx")
 ```
 
 使用`glimpse()`預覽匯入`stroop1`與`stroop2`的資料內容，在以下指示欄位裡寫出你觀察到的差異。
 
 ```{r Q7b}
 # 預覽資料內容
-
+glimpse(stroop1)
+glimpse(stroop2)
 ```
 
 > （在這裡寫出你的觀察）
+stroop1 的 rt (data type)為double，且均為取到小數點後四位，而stroop2，在這裡很特別，一樣是有小數點的真數，(data type)卻是Character。
 
 根據觀察更改匯入"data/stroop.xlsx"的函式參數，以一行程式碼匯入`stroop2b`，再預覽資料內容，確認每一個欄位的資料型態都與`stroop1`一致。
 
 ```{r Q8, message=FALSE, warning=FALSE}
-stroop2b <- read_xlsx("../data/stroop.xlsx", ...)
+stroop2b <- readxl::read_xlsx("../data/stroop.xlsx")
 glimpse(stroop2b)
+glimpse(stroop1)
+```
+
+
+```{r Q8, message=FALSE, warning=FALSE}
+# 改變stroop2b資料型態
+#(1)設定ct，(2)指令stroop_2b為stroop2b的變更後資料型態
+
+#(1)
+ct <- list(
+  sub_id = "c", # 
+    word = "c",
+     ink = "c",
+response = "c",
+      rt = "d"
+)
+#(2)
+stroop_2b <- readr::read_csv("../data/stroop.csv", 
+                   col_types = ct)
+glimpse(stroop_2b)
 ```
 
 
@@ -100,7 +128,10 @@ glimpse(stroop2b)
 自建一個tibble表單，舉出你認識的兩位同學姓名、年齡與參加的社團，分別存入`name`, `age`,  `group`等三個欄位。
 
 ```{r Q9}
-people <- NULL
+people <- tibble(name = c("梁朝偉","王楊明"),
+                  age = c(18,19),   
+                group = c("網球","籃球") 
+                )
 ```
 
 比照以下的表格範例，在下方程式碼區塊使用最多四行程式碼，製造出內容一致的tibble表單。這個題目可以演練`rep()`的使用技巧。
@@ -117,7 +148,11 @@ ID |  A | B   | C
 8	| A1	| B1	| C4
 
 ```{r Q10}
-my_tbl <- NULL  
+my_tbl <- tibble(ID = 1:8,
+                  A = rep(c("A2","A1"), each = 4),
+                  B = rep(c("B2","B1"), time = 4),
+                  C = rep(c("C3","C4"), each = 4)
+)
 ```
 
 ## 資料型態的運用方法
@@ -129,35 +164,36 @@ my_tbl <- NULL
 * `two_chr` 文字(character)
 
 ```{r Q11}
-two_int <- NULL
-two_dbl <- NULL
-two_chr <- NULL
+two_int <- "interger"
+two_dbl <- "double"
+two_chr <- "character"
 ```
 
 
 程式碼區塊裡的物件`F_log`, `F_chr`, `F_int`, `F_dbl`預定填入邏輯值(logical)，文字，整數，浮點數。請分別填入等於`FALSE`的資料。
 
 ```{r Q12}
-F_log <- NULL
-F_chr <- NULL
-F_int <- NULL
-F_dbl <- NULL
+# 老師資料exercise 這題是打TRUE
+F_log <- "logical"
+F_chr <- "character"
+F_int <- "interger"
+F_dbl <- "double"
 ```
 
 檢查填入的內容是否正確：
 
 ```{r Q12-check}
 # these should all evaluate to TRUE
-c(
-  F_log == FALSE,
-  F_chr == FALSE,
-  F_int == FALSE,
-  F_dbl == FALSE,
+  c(
+  F_log == TRUE,
+  F_chr == TRUE,
+  F_int == TRUE,
+  F_dbl == TRUE,
   is.logical(F_log),
   is.character(F_chr),
   is.integer(F_int),
   is.double(F_dbl)
-)
+  )
 ```
 
 
@@ -166,32 +202,38 @@ c(
 製造一個包含三個數字2,4,8的向量。
 
 ```{r Q13}
-threes <- NULL
+threes <- c(2,4,8)
 ```
 
 
 R內存環境有既存向量`letters`包括26個英文字母，參考第2單元裡的範例，在以下程式碼區塊拼出'dog'。
 
 ```{r Q14}
-dog <- NULL
+dog <- c(4,15,7)
+LETTERS[dog]
 ```
 
 
 R內存函式`colors()`可輸出繪圖函式能展現的色彩代號，請列出是天藍色(skyblue)的所有代號存入物件`col_skyblue`。再以一行程式碼計算有多少天藍色的代號並存入物件`col_skyblue_length`。
 
-
 ```{r Q15}
-col_skyblue <- NULL
-col_skyblue_length <- NULL
+col_skyblue <- colors()
+col_skyblue_length <- length(colors())
+# 從第589~593 共有 5個
 ```
-
 
 
 製造一個自訂資料表格物件`table1`，其中至少有四個變數欄位，第2單元提到的資料型態(邏輯值，文字，整數，浮點數)都要出現。再將每個欄位的資料型態，存入列表物件`col_types`。
 
 ```{r Q16}
-table1 <- NULL
-col_types <- NULL
+
+table1 <- list(     logical = TRUE,
+                  character = "10",
+                    integer = 10L,
+                     double = 10.0
+)
+                
+col_types <- table1
 ```
 
 
@@ -200,17 +242,20 @@ col_types <- NULL
 製造向量物件`x`包含-100到100，再製造向量物件`y`包含`x`所有數值的3次方。最後以程式碼`plot(x, y)`繪製兩個向量之間的關係。
 
 ```{r Q17}
-x <- NULL
-y <- NULL
+x <- c(-100:100)
+y <- c(-100:100)^3
+plot(x,y)
 ```
 
 
 製造向量物件`t`包含0到1000之間相隔0.5的所有數值。再製造向量物件`x`是`t`的餘弦函數值(cos)，向量物件`y`是`t`的正弦函數值(sin)。繪圖呈現`x`與`y`之間的關係。
 
 ```{r Q18}
-t <- NULL
-x <- NULL
-y <- NULL
+# use Trigonometric Functions
+t <- seq(from = 0, to = 1000, by = 0.5)
+x <- cos(t)
+y <- sin(t)
+plot(x,y)
 ```
 
 
@@ -227,12 +272,16 @@ R內建機率分佈函數 `runif(n, min, max)`，其中的參數`n`決定產生�
 set.seed(8675309) # ensures you get the same random numbers each time you run this code chunk
 
 pvals    <- runif(10000)
-is_sig   <- NULL
-sig_vals <- NULL
-prop_sig <- NULL
-hist(pvals,main="10000次無效結果的p值分佈", xlab="p值", ylab = "結果次數總計")
+is_sig   <- runif(pvals, min = .01, max = .01)
+sig_vals <- runif(is_sig, min = .01)
+prop_sig <- runif(sig_vals,min = .01)
+hist(pvals,main = 10000, xlab = .01, ylab = 10 )
+## hist(pvals,main="10000次無效結果的p值分佈", xlab="p值", ylab = "結果次數總計")
 ```
 
 > (在此說明prop_sig與.01的關係)
-
+說明:由分數的隨機分布，分數是落在>.01 <1 之間，經由多次隨機選取覺得分數越來越趨於1
+對此的程式碼設定不太熟悉
+但是不太理解，透過在console打prop_sig，發現有的數已經超過1。
+#本次練習為 0826 因為專題使用重製資料時發現，許多基本的觀念還沒有連貫，因此重新學習Chpater 2 . 
 **完成以上作業，可執行編織(knit)，提供html檔讓老師與助教確認作業成果。**
